@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Loan Approval - Admin Dashboard</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+        }
+
+        .header {
+            background: #172554;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 30px auto;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+
+            box-shadow:
+                0 4px 12px
+                rgba(0, 0, 0, 0.08);
+
+            text-align: center;
+        }
+
+        .card h2 {
+            margin: 10px 0;
+            font-size: 32px;
+        }
+
+        .card p {
+            margin: 0;
+            color: #666;
+        }
+
+        .table-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+
+            box-shadow:
+                0 4px 12px
+                rgba(0, 0, 0, 0.08);
+
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #172554;
+            color: white;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .approved {
+            color: green;
+            font-weight: bold;
+        }
+
+        .rejected {
+            color: red;
+            font-weight: bold;
+        }
+
+        .bank {
+            font-weight: bold;
+        }
+
+        .refresh {
+            margin-bottom: 20px;
+            padding: 10px 18px;
+
+            border: none;
+            border-radius: 6px;
+
+            background: #172554;
+            color: white;
+
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .refresh:hover {
+            opacity: 0.9;
+        }
+
+        .status {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 800px) {
+
+            .cards {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+        }
+
+        @media (max-width: 500px) {
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="header">
+
+    <h1>
+        🏦 Loan Approval Admin Dashboard
+    </h1>
+
+    <p>
+        ML-Powered Loan Application Management
+    </p>
+
+</div>
+
+
+<div class="container">
+
+
+    <button
+        class="refresh"
+        onclick="loadDashboard()">
+
+        🔄 Refresh Dashboard
+
+    </button>
+
+
+    <div
+        id="status"
+        class="status">
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- STATISTICS -->
+    <!-- ============================= -->
+
+    <div class="cards">
+
+
+        <div class="card">
+
+            <p>
+                Total Applications
+            </p>
+
+            <h2 id="total">
+                0
+            </h2>
+
+        </div>
+
+
+        <div class="card">
+
+            <p>
+                Approved
+            </p>
+
+            <h2 id="approved">
+                0
+            </h2>
+
+        </div>
+
+
+        <div class="card">
+
+            <p>
+                Rejected
+            </p>
+
+            <h2 id="rejected">
+                0
+            </h2>
+
+        </div>
+
+
+        <div class="card">
+
+            <p>
+                Approval Rate
+            </p>
+
+            <h2 id="rate">
+                0%
+            </h2>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- APPLICATION TABLE -->
+    <!-- ============================= -->
+
+    <div class="table-container">
+
+
+        <h2>
+            📋 Loan Applications
+        </h2>
+
+
+        <table>
+
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Bank</th>
+
+                    <th>Gender</th>
+
+                    <th>Married</th>
+
+                    <th>Dependents</th>
+
+                    <th>Education</th>
+
+                    <th>Self Employed</th>
+
+                    <th>Income</th>
+
+                    <th>Coapplicant Income</th>
+
+                    <th>Loan Amount</th>
+
+                    <th>Loan Term</th>
+
+                    <th>Credit</th>
+
+                    <th>Property Area</th>
+
+                    <th>Prediction</th>
+
+                    <th>Probability</th>
+
+                    <th>Date</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="applicationTable">
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+const API_URL =
+    "http://127.0.0.1:5000";
+
+
+// =====================================================
+// LOAD DASHBOARD
+// =====================================================
+
+async function loadDashboard() {
+
+
+    const statusBox =
+        document.getElementById(
+            "status"
+        );
+
+
+    try {
+
+
+        statusBox.textContent =
+            "⏳ Loading dashboard...";
+
+
+        // =================================================
+        // LOAD STATISTICS
+        // =================================================
+
+        const statsResponse =
+            await fetch(
+                API_URL +
+                "/admin/stats"
+            );
+
+
+        if (!statsResponse.ok) {
+
+            throw new Error(
+                "Unable to load statistics"
+            );
+
+        }
+
+
+        const stats =
+            await statsResponse.json();
+
+
+        document.getElementById(
+            "total"
+        ).textContent =
+            stats.total;
+
+
+        document.getElementById(
+            "approved"
+        ).textContent =
+            stats.approved;
+
+
+        document.getElementById(
+            "rejected"
+        ).textContent =
+            stats.rejected;
+
+
+        document.getElementById(
+            "rate"
+        ).textContent =
+            stats.approval_rate +
+            "%";
+
+
+        // =================================================
+        // LOAD APPLICATIONS
+        // =================================================
+
+        const applicationResponse =
+            await fetch(
+                API_URL +
+                "/admin/applications"
+            );
+
+
+        if (!applicationResponse.ok) {
+
+            throw new Error(
+                "Unable to load applications"
+            );
+
+        }
+
+
+        const applications =
+            await applicationResponse.json();
+
+
+        const table =
+            document.getElementById(
+                "applicationTable"
+            );
+
+
+        table.innerHTML = "";
+
+
+        // =================================================
+        // NO APPLICATIONS
+        // =================================================
+
+        if (
+            applications.length === 0
+        ) {
+
+            table.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="16">
+
+                        No applications found.
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+
+
+        // =================================================
+        // DISPLAY APPLICATIONS
+        // =================================================
+
+        applications.forEach(
+            application => {
+
+
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                const predictionClass =
+                    application.prediction ===
+                    "Approved"
+                    ? "approved"
+                    : "rejected";
+
+
+                const probability =
+                    (
+                        Number(
+                            application.probability
+                        ) * 100
+                    ).toFixed(2);
+
+
+                row.innerHTML = `
+
+
+                    <td>
+                        ${application.id}
+                    </td>
+
+
+                    <td class="bank">
+                        ${application.bank_name || "N/A"}
+                    </td>
+
+
+                    <td>
+                        ${application.gender || ""}
+                    </td>
+
+
+                    <td>
+                        ${application.married || ""}
+                    </td>
+
+
+                    <td>
+                        ${application.dependents || ""}
+                    </td>
+
+
+                    <td>
+                        ${application.education || ""}
+                    </td>
+
+
+                    <td>
+                        ${application.self_employed || ""}
+                    </td>
+
+
+                    <td>
+                        ₹${Number(
+                            application.applicant_income || 0
+                        ).toLocaleString()}
+                    </td>
+
+
+                    <td>
+                        ₹${Number(
+                            application.coapplicant_income || 0
+                        ).toLocaleString()}
+                    </td>
+
+
+                    <td>
+                        ${application.loan_amount || ""}
+                    </td>
+
+
+                    <td>
+                        ${application.loan_term || ""}
+                    </td>
+
+
+                    <td>
+                        ${application.credit_history || ""}
+                    </td>
+
+
+                    <td>
+                        ${application.property_area || ""}
+                    </td>
+
+
+                    <td class="${predictionClass}">
+
+                        ${application.prediction}
+
+                    </td>
+
+
+                    <td>
+
+                        ${probability}%
+
+                    </td>
+
+
+                    <td>
+
+                        ${application.created_at || ""}
+
+                    </td>
+
+
+                `;
+
+
+                table.appendChild(row);
+
+
+            }
+        );
+
+
+        statusBox.textContent =
+            "✅ Dashboard updated successfully";
+
+
+    }
+
+
+    catch (error) {
+
+
+        console.error(
+            "Dashboard error:",
+            error
+        );
+
+
+        statusBox.textContent =
+            "❌ Unable to connect to ML server. Make sure Flask is running.";
+
+
+    }
+
+}
+
+
+// =====================================================
+// LOAD WHEN PAGE OPENS
+// =====================================================
+
+loadDashboard();
+
+
+</script>
+
+
+</body>
+
+</html>
