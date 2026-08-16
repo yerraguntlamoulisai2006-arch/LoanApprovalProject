@@ -8,7 +8,6 @@
     <title>Loan Approval System</title>
 
     <style>
-
         * {
             box-sizing: border-box;
         }
@@ -87,7 +86,6 @@
         .rejected {
             color: red;
         }
-
     </style>
 
 </head>
@@ -234,7 +232,7 @@
         </select>
 
 
-        <!-- INCOME -->
+        <!-- APPLICANT INCOME -->
 
         <label>Applicant Income</label>
 
@@ -246,7 +244,7 @@
         >
 
 
-        <!-- COAPPLICANT -->
+        <!-- COAPPLICANT INCOME -->
 
         <label>Coapplicant Income</label>
 
@@ -300,7 +298,7 @@
         </select>
 
 
-        <!-- CREDIT -->
+        <!-- CREDIT HISTORY -->
 
         <label>Credit History</label>
 
@@ -317,7 +315,7 @@
         </select>
 
 
-        <!-- PROPERTY -->
+        <!-- PROPERTY AREA -->
 
         <label>Property Area</label>
 
@@ -356,9 +354,21 @@
 
 <script>
 
-const API_URL =
-    "http://127.0.0.1:5000";
+/*
+==================================================
+RENDER BACKEND URL
+==================================================
+*/
 
+const API_URL =
+    "https://loanapprovalproject-wc7i.onrender.com";
+
+
+/*
+==================================================
+FORM SUBMISSION
+==================================================
+*/
 
 document.getElementById("loanForm")
 .addEventListener(
@@ -372,6 +382,7 @@ document.getElementById("loanForm")
             document.getElementById(
                 "submitButton"
             );
+
 
         const resultBox =
             document.getElementById(
@@ -389,6 +400,12 @@ document.getElementById("loanForm")
             "⏳ Processing application...";
 
 
+        /*
+        ==========================================
+        COLLECT FORM DATA
+        ==========================================
+        */
+
         const applicant = {
 
             bank_name:
@@ -396,30 +413,36 @@ document.getElementById("loanForm")
                     "bank_name"
                 ).value,
 
+
             gender:
                 document.getElementById(
                     "gender"
                 ).value,
+
 
             married:
                 document.getElementById(
                     "married"
                 ).value,
 
+
             dependents:
                 document.getElementById(
                     "dependents"
                 ).value,
+
 
             education:
                 document.getElementById(
                     "education"
                 ).value,
 
+
             self_employed:
                 document.getElementById(
                     "self_employed"
                 ).value,
+
 
             applicant_income:
                 Number(
@@ -428,12 +451,14 @@ document.getElementById("loanForm")
                     ).value
                 ),
 
+
             coapplicant_income:
                 Number(
                     document.getElementById(
                         "coapplicant_income"
                     ).value
                 ),
+
 
             loan_amount:
                 Number(
@@ -442,6 +467,7 @@ document.getElementById("loanForm")
                     ).value
                 ),
 
+
             loan_term:
                 Number(
                     document.getElementById(
@@ -449,12 +475,14 @@ document.getElementById("loanForm")
                     ).value
                 ),
 
+
             credit_history:
                 Number(
                     document.getElementById(
                         "credit_history"
                     ).value
                 ),
+
 
             property_area:
                 document.getElementById(
@@ -470,6 +498,12 @@ document.getElementById("loanForm")
         );
 
 
+        /*
+        ==========================================
+        SEND DATA TO RENDER BACKEND
+        ==========================================
+        */
+
         try {
 
             const response =
@@ -480,8 +514,10 @@ document.getElementById("loanForm")
                         method: "POST",
 
                         headers: {
+
                             "Content-Type":
                                 "application/json"
+
                         },
 
                         body:
@@ -503,6 +539,12 @@ document.getElementById("loanForm")
             );
 
 
+            /*
+            ======================================
+            CHECK SERVER RESPONSE
+            ======================================
+            */
+
             if (!response.ok) {
 
                 throw new Error(
@@ -516,12 +558,20 @@ document.getElementById("loanForm")
             const prediction =
                 result.prediction;
 
+
             const probability =
                 result.probability;
+
 
             const applicationId =
                 result.application_id;
 
+
+            /*
+            ======================================
+            APPROVED
+            ======================================
+            */
 
             if (
                 prediction ===
@@ -537,22 +587,30 @@ document.getElementById("loanForm")
                         <br><br>
 
                         🏦 Bank:
-                        <b>${result.bank_name}</b>
+                        <b>
+                            ${result.bank_name}
+                        </b>
 
                         <br>
 
                         Prediction:
-                        <b>${prediction}</b>
+                        <b>
+                            ${prediction}
+                        </b>
 
                         <br>
 
                         Approval Probability:
-                        <b>${probability}%</b>
+                        <b>
+                            ${probability}%
+                        </b>
 
                         <br>
 
                         Application ID:
-                        <b>${applicationId}</b>
+                        <b>
+                            ${applicationId}
+                        </b>
 
                         <br><br>
 
@@ -562,7 +620,16 @@ document.getElementById("loanForm")
 
                 `;
 
-            } else {
+            }
+
+
+            /*
+            ======================================
+            REJECTED
+            ======================================
+            */
+
+            else {
 
                 resultBox.innerHTML = `
 
@@ -573,22 +640,30 @@ document.getElementById("loanForm")
                         <br><br>
 
                         🏦 Bank:
-                        <b>${result.bank_name}</b>
+                        <b>
+                            ${result.bank_name}
+                        </b>
 
                         <br>
 
                         Prediction:
-                        <b>${prediction}</b>
+                        <b>
+                            ${prediction}
+                        </b>
 
                         <br>
 
                         Approval Probability:
-                        <b>${probability}%</b>
+                        <b>
+                            ${probability}%
+                        </b>
 
                         <br>
 
                         Application ID:
-                        <b>${applicationId}</b>
+                        <b>
+                            ${applicationId}
+                        </b>
 
                         <br><br>
 
@@ -602,6 +677,13 @@ document.getElementById("loanForm")
 
 
         }
+
+
+        /*
+        ==========================================
+        ERROR
+        ==========================================
+        */
 
         catch(error) {
 
@@ -623,6 +705,13 @@ document.getElementById("loanForm")
 
         }
 
+
+        /*
+        ==========================================
+        ENABLE BUTTON AGAIN
+        ==========================================
+        */
+
         finally {
 
             button.disabled = false;
@@ -633,7 +722,6 @@ document.getElementById("loanForm")
         }
 
     }
-
 );
 
 </script>
